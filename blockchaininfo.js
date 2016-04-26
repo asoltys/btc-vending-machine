@@ -16,7 +16,7 @@ function getUtxo(emit){
             transaction.out.forEach(output =>{
               if (addresses.indexOf(output.addr) > -1){
                 emit({
-                  txid: transaction.txid,
+                  txid: transaction.hash,
                   recieved: output.value / 10000000,
                   address: output.addr
                 })
