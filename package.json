@@ -1,0 +1,18 @@
+{
+  "name": "bbtm",
+  "version": "1.0.0",
+  "description": "full node Beer Bitcoin Teller Machine",
+  "main": "server.coffee",
+  "dependencies": {
+    "bluebird": "^3.3.5",
+    "kefir": "^3.2.1",
+    "superagent": "^1.8.3",
+    "ws": "^1.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
