@@ -1,11 +1,12 @@
 'use strict'
-const Kefir = require('kefir')
-const Promise = require('bluebird')
-const exchangeRateStream = require('./quadrigacx')
-const webSocketPromise = require('./blockio')
-const utxoPollPromise = require('./blockchaininfo')
-const products = require('./products')
+const Kefir = require('kefir');
+const Promise = require('bluebird');
+const exchangeRateStream = require('./quadrigacx');
+const webSocketPromise = require('./blockio');
+const utxoPollPromise = require('./blockchaininfo');
+const products = require('./products');
 const addressMap = {};
+const exec = require('child_process').exec;
 products.forEach(product=>{
   addressMap[product.address] = {
     price: product.price,
