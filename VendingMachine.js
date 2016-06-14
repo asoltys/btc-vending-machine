@@ -30,9 +30,9 @@ Promise.all([webSocketPromise, utxoPollPromise])
     const allPaymentStreams = Kefir
         .merge(paymentStreamArray)
         .log()
-        .filter(payment => { 
+        .filter(payment => {
             if (txs.indexOf(payment.txid) != -1) {
-                return false 
+                return false
             }
             txs.push(payment.txid)
             return true
@@ -64,7 +64,7 @@ Promise.all([webSocketPromise, utxoPollPromise])
           status.pending += timingEvent
           return status
         }
-      }, {trigger:false, wait:0, pending:19}).log('Current Status: ')
+      }, {trigger:false, wait:0, pending:0}).log('Current Status: ')
 
     const outputStream = timingLayer
       .filter( status => status.trigger)
