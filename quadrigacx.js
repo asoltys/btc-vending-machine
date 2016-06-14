@@ -4,14 +4,17 @@ const request = require('superagent');
 const Promise = require('bluebird');
 const INTERVAL = 777777;
 
-const exchangeRateStream = Kefir.stream( emitter => {
-  function getExchangeRate(emit){
+function getExchangeRate(emit) {
     request.get(url).end((err, res)=>{
-      if(!err) emit(res.body.vwap);
+        if(!err) emit(res.body.vwap);
     });
-  }
+}
+  
+function emittron (emitter) {
   getExchangeRate(emitter.emit);
   setInterval(getExchangeRate, INTERVAL , emitter.emit);
-});
+}
+
+const exchangeRateStream = Kefir.stream(emittron);
 
 module.exports = exchangeRateStream.log('Exchange Rate:');
