@@ -13,8 +13,7 @@ products.forEach(product=>{
     pin: product.gpioPin
   }
 })
-
-Promise.all([webSocketPromise, utxoPollPromise])
+Promise.all([webSocketPromise])
   .then(paymentStreamArray=>{
     const allPaymentStreams = Kefir.merge(paymentStreamArray).log('merged payment layer triggered')
     const normalizedPaymentStream = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, exchangeRate)=>{
@@ -44,11 +43,14 @@ Promise.all([webSocketPromise, utxoPollPromise])
           status.pending += timingEvent
           return status
         }
-      }, {trigger:false, wait:0, pending:0}).log('Current Status: ')
+      }, {trigger:false, wait:0, pending:19}).log('Current Status: ')
 
     const outputStream = timingLayer
       .filter( status => status.trigger)
-      .flatMapConcat(() => Kefir.sequentially(100, [1, 0]))
+      .flatMapConcat(() => Kefir.sequentially(2000, [1, 0]))
       .log('Pin Value: ')
-      .onValue(pinValue => exec(`echo ${pinValue} > /sys/class/gpio/gpio17/value`));
+      .onValue(pinValue => {
+	console.log({pinValue});
+	exec(`echo "` + pinValue + `"> /sys/class/gpio/gpio17/value`)
+      });
   });
