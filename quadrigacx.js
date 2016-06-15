@@ -9,7 +9,7 @@ function getExchangeRate(emit) {
         if(!err) emit(res.body.vwap);
     });
 }
-  
+
 function emittron (emitter) {
   getExchangeRate(emitter.emit);
   setInterval(getExchangeRate, INTERVAL , emitter.emit);
@@ -17,4 +17,5 @@ function emittron (emitter) {
 
 const exchangeRateStream = Kefir.stream(emittron);
 
-module.exports = exchangeRateStream.log('Exchange Rate:');
+module.exports = exchangeRateStream
+  .log('New Exchange Rate:');

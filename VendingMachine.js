@@ -25,18 +25,22 @@ function randomTx() {
 }
 //const dummy = Kefir.fromPoll(1000, randomTx)
 
+
+function checkSeen(payment){
+  if (txs.indexOf(payment.txid) != -1) {
+      console.log('Already saw txn', {payment});
+      return false
+  }
+  txs.push(payment.txid)
+  return true
+}
+
+
 Promise.all([webSocketPromise, utxoPollPromise])
   .then(paymentStreamArray=>{
     const allPaymentStreams = Kefir
         .merge(paymentStreamArray)
-        .log()
-        .filter(payment => {
-            if (txs.indexOf(payment.txid) != -1) {
-                return false
-            }
-            txs.push(payment.txid)
-            return true
-        })
+        .filter(checkSeen)
     const normalizedPaymentStream = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, exchangeRate)=>{
         var paymentCents = payment.recieved * exchangeRate * 100;
         var normalizedPayment = paymentCents / addressMap[payment.address].price;

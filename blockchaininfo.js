@@ -33,6 +33,7 @@ function getUtxo(emit){
 const utxoStream = Kefir.stream( emitter => {
   getUtxo(emitter.emit);
   setInterval(getUtxo, INTERVAL , emitter.emit);
-}).log('Payment Found In Utxo: ');
+  })
+  .log('Blockchain.info Address Event Created');
 
 module.exports = Promise.resolve(utxoStream);
