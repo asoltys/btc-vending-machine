@@ -42,25 +42,27 @@ Promise.all([webSocketPromise, utxoPollPromise])
         .merge(paymentStreamArray)
         .filter(checkSeen);
 
-    var currentExchangeRate;
-    const normalizedPaymentStream = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, exchangeRate)=>{
-      if (currentExchangeRate !== exchangeRate) {
-        currentExchangeRate = exchangeRate;
-        return 0;
+    var currentRate;
+    const purchases = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, rate)=>{
+      if (currentRate !== rate) {
+        currentRate = rate;
+        return 0; // do not process rate changes
       }
-      var paymentCents = payment.recieved * exchangeRate * 100;
-      var normalizedPayment = paymentCents / addressMap[payment.address].price;
-      console.log({paymentCents, normalizedPayment});
-      return normalizedPayment;
-    });
+
+      let paid = payment.recieved * rate * 100; //cents
+      let price = addressMap[payment.address].price
+      return paid / price;
+    })
+    .log('purchases')
 
     const heartbeat = Kefir.interval(1000, {isHeartbeat:true});
-    const timingLayer = Kefir.merge([normalizedPaymentStream,heartbeat])
+    const timingLayer = Kefir
+      .merge([purchases,heartbeat])
       .scan((status, timingEvent)=>{
         if (timingEvent.isHeartbeat){
           if (status.wait > 0){
             status.trigger = false
-            status.wait -=1;
+            status.wait -= 1;
             return status
           }
           if (status.pending > 1){
@@ -74,14 +76,11 @@ Promise.all([webSocketPromise, utxoPollPromise])
           status.pending += timingEvent
           return status
         }
-      }, {trigger:false, wait:0, pending:0}).log('Current Status: ')
+      }, {trigger:false, wait:0, pending:0})
+      .log()
 
     const outputStream = timingLayer
       .filter( status => status.trigger)
       .flatMapConcat(() => Kefir.sequentially(2000, [1, 0]))
-      .log('Pin Value: ')
-      .onValue(pinValue => {
-	console.log({pinValue});
-	exec(`echo "` + pinValue + `"> /sys/class/gpio/gpio17/value`)
-      });
+      .onValue(pinValue => exec(`echo "` + pinValue + `"> /sys/class/gpio/gpio17/value`));
   });

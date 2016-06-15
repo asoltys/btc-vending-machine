@@ -17,5 +17,13 @@ function emittron (emitter) {
 
 const exchangeRateStream = Kefir.stream(emittron);
 
+var currentRate;
 module.exports = exchangeRateStream
-  .log('New Exchange Rate:');
+  .log('New Exchange Rate:')
+  .filter( rate => {
+    if(currentRate !== rate){
+        currentRate = rate
+        return true; // ensure only rate changing events get through
+    }
+    return false;
+  });
