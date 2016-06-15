@@ -40,12 +40,18 @@ Promise.all([webSocketPromise, utxoPollPromise])
   .then(paymentStreamArray=>{
     const allPaymentStreams = Kefir
         .merge(paymentStreamArray)
-        .filter(checkSeen)
+        .filter(checkSeen);
+
+    var currentExchangeRate;
     const normalizedPaymentStream = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, exchangeRate)=>{
-        var paymentCents = payment.recieved * exchangeRate * 100;
-        var normalizedPayment = paymentCents / addressMap[payment.address].price;
-        console.log({paymentCents, normalizedPayment});
-        return normalizedPayment;
+      if (currentExchangeRate !== exchangeRate) {
+        currentExchangeRate = exchangeRate;
+        return 0;
+      }
+      var paymentCents = payment.recieved * exchangeRate * 100;
+      var normalizedPayment = paymentCents / addressMap[payment.address].price;
+      console.log({paymentCents, normalizedPayment});
+      return normalizedPayment;
     });
 
     const heartbeat = Kefir.interval(1000, {isHeartbeat:true});

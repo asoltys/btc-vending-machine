@@ -2,7 +2,7 @@ module.exports = products = [
   {
     name: 'beverage',
     address:'3HX1eqruGnrV1P7ChmVdaRVQp9iJNN3vaT',
-    price: 299,
+    price: 285,
     gpioPin: 17
   },
   {
