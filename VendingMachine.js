@@ -1,6 +1,7 @@
 'use strict'
 const Kefir = require('kefir');
 const Promise = require('bluebird');
+const EventEmitter = require('events');
 const exchangeRateStream = require('./quadrigacx');
 const webSocketPromise = require('./blockio');
 const utxoPollPromise = require('./blockchaininfo');
@@ -16,17 +17,17 @@ products.forEach(product=>{
   }
 })
 
-// Create a random transaction for testing:
-function randomTx() {
-    return {
-        txid: Math.round(Math.random()*3).toString(),
-        recieved: 0.0003,
-        address: products[0].address }
-}
-//const dummy = Kefir.fromPoll(1000, randomTx)
+// // Dummy for testing
+// function randomTx() {
+//     return {
+//         txid: Math.round(Math.random()*3).toString(),
+//         recieved: 0.003,
+//         address: products[0].address }
+// }
+// const dummy = Kefir.fromPoll(10000, randomTx)
 
-
-function checkSeen(payment){
+// filters
+function filterSeen(payment){
   if (txs.indexOf(payment.txid) != -1) {
       console.log('Already saw txn', {payment});
       return false
@@ -35,46 +36,66 @@ function checkSeen(payment){
   return true
 }
 
+var currentRate = false;
+function filterRateChange(payment){
+    if (currentRate && currentRate != payment.rate) {
+      currentRate = payment.rate;
+      return false;
+    }
+    return true
+}
 
-Promise.all([webSocketPromise, utxoPollPromise])
+// maps
+function normalizePayment(payment){
+  let paid = payment.recieved * payment.rate * 100; //cents
+  let price = addressMap[payment.address].price
+  console.log({paid, price})
+  return paid / price;
+}
+
+Promise.all([webSocketPromise, utxoPollPromise/*, dummy*/])
   .then(paymentStreamArray=>{
     const allPaymentStreams = Kefir
         .merge(paymentStreamArray)
-        .filter(checkSeen);
+        .filter(filterSeen);
 
-    var currentRate = false;
-    const purchases = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, rate)=>{
-      if (currentRate && currentRate != rate) {
-        currentRate = rate;
-        return 0; // do not process rate changes
-      }
+    const purchases = Kefir
+      .combine([allPaymentStreams,exchangeRateStream], (payment, rate)=>{
+        payment['rate'] = rate;
+        return payment;
+      })
+      .filter(filterRateChange)
+      .map(normalizePayment)
+      .log('purchases')
 
-      let paid = payment.recieved * rate * 100; //cents
-      let price = addressMap[payment.address].price
-      console.log({paid, price})
-      return paid / price;
-    })
-    .log('purchases')
-
-    const heartbeat = Kefir.interval(1000, {isHeartbeat:true});
+    var heartbeat;
+    const _beat = {}
+    const heartStream = Kefir.stream(beat => {
+      heartbeat = setInterval(beat.emit, 1000, {isHeartbeat: true});
+      _beat['emit'] = beat.emit
+    });
     const timingLayer = Kefir
-      .merge([purchases,heartbeat])
+      .merge([purchases,heartStream])
       .scan((status, timingEvent)=>{
         if (timingEvent.isHeartbeat){
           if (status.wait > 0){
             status.trigger = false
             status.wait -= 1;
-            return status
-          }
-          if (status.pending > 1){
+          } else if (status.pending > 1){
               status.trigger = true;
               status.pending -= 1
               status.wait = 12
-            }
+          } else {
+            console.log('clearing heartbeat')
+            clearInterval(heartbeat)
+            heartbeat = false;
+          }
           return status
-        }
-        else{
+        } else {
           status.pending += timingEvent
+          if (!heartbeat){
+            heartbeat = setInterval(_beat.emit, 1000, {isHeartbeat: true});
+          }
           return status
         }
       }, {trigger:false, wait:0, pending:0})
