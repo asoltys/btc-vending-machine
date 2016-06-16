@@ -42,15 +42,16 @@ Promise.all([webSocketPromise, utxoPollPromise])
         .merge(paymentStreamArray)
         .filter(checkSeen);
 
-    var currentRate;
+    var currentRate = false;
     const purchases = Kefir.combine([allPaymentStreams,exchangeRateStream], (payment, rate)=>{
-      if (currentRate !== rate) {
+      if (currentRate && currentRate != rate) {
         currentRate = rate;
         return 0; // do not process rate changes
       }
 
       let paid = payment.recieved * rate * 100; //cents
       let price = addressMap[payment.address].price
+      console.log({paid, price})
       return paid / price;
     })
     .log('purchases')
