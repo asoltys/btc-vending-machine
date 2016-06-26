@@ -17,10 +17,10 @@ products.forEach(product=>{
   }
 })
 
-// // Dummy for testing
+// Dummy for testing
 // function randomTx() {
 //     return {
-//         txid: Math.round(Math.random()*2).toString(),
+//         txid: Math.round(Math.random()*3).toString(),
 //         recieved: 0.003,
 //         address: products[0].address }
 // }
@@ -28,6 +28,8 @@ products.forEach(product=>{
 
 // filters
 function filterSeen(payment){
+  console.log({txs})
+
   if (txs.indexOf(payment.txid) != -1) {
       console.log('Already saw txn', {payment});
       return false
@@ -39,6 +41,9 @@ function filterSeen(payment){
 var currentRate = false;
 function filterRateChange(payment){
     let pass
+    if(!currentRate){
+      currentRate = payment.rate;
+    }
     if (currentRate != payment.rate) {
       currentRate = payment.rate;
       pass = false;
@@ -59,12 +64,15 @@ function normalizePayment(payment){
 
 Promise.all([webSocketPromise, utxoPollPromise/*, dummy*/])
   .then(paymentStreamArray=>{
+
+    console.log("Initializing Payment Processing")
     const allPaymentStreams = Kefir
         .merge(paymentStreamArray)
         .filter(filterSeen);
 
     const purchases = Kefir
       .combine([allPaymentStreams,exchangeRateStream], (payment, rate)=>{
+        console.log("Merging the stream.")
         payment['rate'] = rate;
         return payment;
       })
