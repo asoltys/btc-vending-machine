@@ -39,7 +39,7 @@ function filterSeen(payment){
 var currentRate = false;
 function filterRateChange(payment){
     let pass
-    if (!currentRate || currentRate != payment.rate) {
+    if (currentRate != payment.rate) {
       currentRate = payment.rate;
       pass = false;
     }else {
