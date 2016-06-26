@@ -20,7 +20,7 @@ products.forEach(product=>{
 // // Dummy for testing
 // function randomTx() {
 //     return {
-//         txid: Math.round(Math.random()*3).toString(),
+//         txid: Math.round(Math.random()*2).toString(),
 //         recieved: 0.003,
 //         address: products[0].address }
 // }
@@ -38,11 +38,15 @@ function filterSeen(payment){
 
 var currentRate = false;
 function filterRateChange(payment){
-    if (currentRate && currentRate != payment.rate) {
+    let pass
+    if (!currentRate || currentRate != payment.rate) {
       currentRate = payment.rate;
-      return false;
+      pass = false;
+    }else {
+      pass = true
     }
-    return true
+    console.log({pass, currentRate})
+    return pass
 }
 
 // maps
@@ -64,7 +68,9 @@ Promise.all([webSocketPromise, utxoPollPromise/*, dummy*/])
         payment['rate'] = rate;
         return payment;
       })
+      .log('Attempting to prevent.')
       .filter(filterRateChange)
+      .log('Allowed To Trigger')
       .map(normalizePayment)
       .log('purchases')
 
