@@ -5,6 +5,7 @@ const EventEmitter = require('events');
 const exchangeRateStream = require('./quadrigacx');
 const webSocketPromise = require('./blockio');
 const utxoPollPromise = require('./blockchaininfo');
+const bcoinPromise = require('./bcoin');
 const products = require('./products');
 const addressMap = {};
 const exec = require('child_process').exec;
@@ -62,7 +63,7 @@ function normalizePayment(payment){
   return paid / price;
 }
 
-Promise.all([webSocketPromise, utxoPollPromise/*, dummy*/])
+Promise.all([webSocketPromise, utxoPollPromise, bcoinPromise/*, dummy*/])
   .then(paymentStreamArray=>{
 
     console.log("Initializing Payment Processing")

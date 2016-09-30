@@ -1,9 +1,6 @@
 const Kefir = require('kefir')
 const Promise = require('bluebird')
 const WebSocket = require('ws');
-const exchangeRateStream = require('./quadrigacx')
-const webSocketPromise = require('./blockio')
-const utxoPollPromise = require('./blockchaininfo')
 const products = require('./products')
 
 function configureWebSocket(products){
