@@ -26,7 +26,7 @@ function configureWebSocket(products){
 function parseAddressEvent(addressEvent){
   return {
     txid: addressEvent.data.txid,
-    recieved: addressEvent.data.amount_received,
+    received: addressEvent.data.amount_received,
     address: addressEvent.data.address
   }
 }

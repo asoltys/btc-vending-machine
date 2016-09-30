@@ -21,7 +21,7 @@ products.forEach(product=>{
 // function randomTx() {
 //     return {
 //         txid: Math.round(Math.random()*3).toString(),
-//         recieved: 0.003,
+//         received: 0.003,
 //         address: products[0].address }
 // }
 // const dummy = Kefir.fromPoll(10000, randomTx)
@@ -56,7 +56,7 @@ function filterRateChange(payment){
 
 // maps
 function normalizePayment(payment){
-  let paid = payment.recieved * payment.rate * 100; //cents
+  let paid = payment.received * payment.rate * 100; //cents
   let price = addressMap[payment.address].price
   console.log({paid, price})
   return paid / price;

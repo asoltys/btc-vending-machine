@@ -17,7 +17,7 @@ function getUtxo(emit){
               if (addresses.indexOf(output.addr) > -1){
                 emit({
                   txid: transaction.hash,
-                  recieved: output.value / 100000000,
+                  received: output.value / 100000000,
                   address: output.addr
                 })
               }
