@@ -6,7 +6,7 @@ module.exports = products = [
     gpioPin: 17
   },
   {
-    name:'tortest',
+    name:'test',
     address: '1NoeMxPd7uPeFEgmiqx6PLRRwfzheTDqix',
     price: 10000,
     gpioPin: 4
