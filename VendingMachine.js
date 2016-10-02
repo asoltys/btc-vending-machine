@@ -18,16 +18,6 @@ products.forEach(product=>{
   }
 })
 
-// Dummy for testing
-// function randomTx() {
-//     return {
-//         txid: Math.round(Math.random()*3).toString(),
-//         received: 0.003,
-//         address: products[0].address }
-// }
-// const dummy = Kefir.fromPoll(10000, randomTx)
-
-// filters
 function filterSeen(payment){
   console.log({txs})
 
@@ -63,8 +53,8 @@ function normalizePayment(payment){
   return paid / price;
 }
 
-Promise.all([webSocketPromise, utxoPollPromise, bcoinPromise/*, dummy*/])
-  .then(paymentStreamArray=>{
+Promise.all([webSocketPromise, utxoPollPromise, bcoinPromise])
+  .then(paymentStreamArray => {
 
     console.log("Initializing Payment Processing")
     const allPaymentStreams = Kefir

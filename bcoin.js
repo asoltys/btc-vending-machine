@@ -1,27 +1,11 @@
 const Kefir = require('kefir')
 const Promise = require('bluebird')
 const WebSocket = require('ws');
-const bcoin = require('bcoin');
+const bcoin = require('bcoin').set('testnet');
 const products = require('./products')
 const addresses = products.map(product => product.address);
 
 function configure(products) {
-  /*
-  var ws = new WebSocket('wss://n.block.io/');
-  return Promise.fromCallback(done => {
-    ws.on('open', () => {
-      products.forEach( product=>{
-        console.log('subscribe to ',product.address )
-        ws.send(JSON.stringify({
-          "network": "BTC",
-          "type": "address",
-          "address": product.address
-        }));
-      });
-      done(null, ws); //addressWatcher
-    });
-  });
-  */
   var chain = new bcoin.chain({
     db: 'leveldb',
     // A custom chaindb location:
@@ -43,18 +27,20 @@ function configure(products) {
       pool.connect();
       pool.startSync();
 
-      pool.on('error', err => { /* keep calm and bitcoin on */ });
-      done(null, pool); //addressWatcher
+      pool.on('error', err => { console.log(err) });
+      done(null, pool);
     });
   });
 }
 
 function parse(tx){
-  return {
-    txid: tx.txid,
-    received: tx.amount,
-    address: tx.address
+  payment = {
+    txid: tx.hash,
+    received: tx.value,
+    address: tx.outputs.filter(output => addresses.include(output.address.toBase58()))[0]
   }
+  console.log(payment);
+  return payment;
 }
 
 module.exports = configure(products)
@@ -62,9 +48,8 @@ module.exports = configure(products)
     console.log('Starting up bcoin')
     return Kefir.fromEvents(watcher, 'tx')
       .log('bcoin tx seen')
-//      .filter(value => value.type == 'address')
-//      .filter(value => value.data.confirmations < 2)
-//      .map(parseAddressEvent)
+      .filter(tx => tx.confirmations < 2)
+      .map(parse)
     })
 
 
