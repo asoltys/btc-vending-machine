@@ -36,10 +36,9 @@ pool.open(err => {
 let bcoinTxStream = Kefir
     .fromEvents(pool, 'tx')
     .map(tx => {
-      //TODO: parse event to:
-      // txid: tx.txid,
-      // received: tx.amount,
-      // address: tx.address
+      txid: tx.hash,
+      received: tx.value,
+      address: tx.outputs.filter(output => addresses.include(output.address.toBase58()))[0]
     })
 
 module.exports = Promise.resolve(bcoinTxStream)
