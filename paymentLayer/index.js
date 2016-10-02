@@ -6,7 +6,7 @@ const Promise = require('bluebird')
 // Promises of Streams
 const blockio = require('./blockio')
 const blockchaininfo = require('./blockchaininfo')
-    //TODO const bcoin = require('./bcoin')
+const bcoin = require('./bcoin')
 
 const txs = [];
 
@@ -20,7 +20,7 @@ const dummy = Kefir.fromPoll(10000, randomTx)
 
 
 module.exports =
-    Promise.all([blockchaininfo, blockio /*TODO,bcoin*/, dummy ])
+    Promise.all([blockchaininfo, blockio, bcoin, dummy ])
     // TODO: correctly continue if less than all promises error
     .then(allPayments => {
         log("Initializing Payment Processing")

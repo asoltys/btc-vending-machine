@@ -4,6 +4,7 @@
   "description": "full node Beer Bitcoin Teller Machine",
   "main": "server.coffee",
   "dependencies": {
+    "bcoin": "^0.15.0",
     "bluebird": "^3.3.5",
     "debug": "^2.2.0",
     "kefir": "^3.2.1",
